@@ -1,6 +1,6 @@
+import uuid
 from abc import ABC, abstractmethod
 from typing import Optional
-import uuid
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,10 +8,11 @@ from sqlalchemy.future import select
 
 from core.config import app_config
 from db.config import get_session
-from db.models.link import Link as LinkDbModel, LinkClick as LinkClickDbModel
-from models.links import Link, ShortLink, Links, ShortLinks, ClientData, ClickData
+from db.models.link import Link as LinkDbModel
+from db.models.link import LinkClick as LinkClickDbModel
+from models.links import ClickData, ClientData, Link, Links, ShortLink, ShortLinks
 
-URL_PREFIX = f"http://{app_config.project_host}:{app_config.project_port}/"
+URL_PREFIX = f"http://{app_config.project_host}:{app_config.project_port}/api/v1/"
 
 
 class BaseLinkService(ABC):
@@ -32,7 +33,9 @@ class BaseLinkService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_status(self, short_url: str, max_result: int, offset: int) -> list[ClickData]:
+    async def get_status(
+        self, short_url: str, max_result: int, offset: int
+    ) -> list[ClickData]:
         raise NotImplementedError
 
     @abstractmethod
@@ -55,7 +58,10 @@ class LinkService(BaseLinkService):
         return ShortLinks(links=result)
 
     async def get_link(self, short_url: str, client_data: ClientData) -> Optional[Link]:
-        query = select(LinkDbModel).where((LinkDbModel.short_link==short_url) & (LinkDbModel.is_deleted == False))
+        query = select(LinkDbModel).where(
+            (LinkDbModel.short_link == short_url)
+            & (LinkDbModel.is_deleted == False)  # noqa E712
+        )
         result = await self.session.execute(query)
         result = result.scalar_one_or_none()
         if not result:
@@ -76,10 +82,13 @@ class LinkService(BaseLinkService):
         self.session.add(result)
         await self.session.commit()
 
-    async def get_status(self, short_url: str, max_result: int = 10, offset: int = 0) -> list[ClickData]:
+    async def get_status(
+        self, short_url: str, max_result: int = 10, offset: int = 0
+    ) -> list[ClickData]:
         query = select(LinkDbModel).where(
-            (LinkDbModel.short_link == short_url) & (
-                        LinkDbModel.is_deleted == False))
+            (LinkDbModel.short_link == short_url)
+            & (LinkDbModel.is_deleted == False)  # noqa E712
+        )
         link = await self.session.execute(query)
         link = link.scalar_one_or_none()
         if not link:
@@ -95,25 +104,29 @@ class LinkService(BaseLinkService):
         clicks = await self.session.execute(query)
         clicks = clicks.scalars().all()
 
-        return [ClickData(visited=click.created_at, client_data=click.client) for click in clicks]
+        return [
+            ClickData(visited=click.created_at, client_data=click.client)
+            for click in clicks
+        ]
 
     async def get_ping(self) -> bool:
         is_database_working = True
 
         try:
-            await self.session.execute('SELECT 1')
+            await self.session.execute("SELECT 1")
         except Exception:
             is_database_working = False
 
         return is_database_working
 
     async def __add_link(self, link: Link) -> ShortLink:
-        link = LinkDbModel(link=link.url,
-                           short_link=str(uuid.uuid4()),
-                           )
+        link = LinkDbModel(
+            link=link.url,
+            short_link=str(uuid.uuid4()),
+        )
         self.session.add(link)
         await self.session.commit()
-        return ShortLink(url=f'{URL_PREFIX}{link.short_link}')
+        return ShortLink(url=f"{URL_PREFIX}{link.short_link}")
 
     async def __add_click(self, link: LinkDbModel, client_data: ClientData):
         record = LinkClickDbModel(
