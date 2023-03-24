@@ -1,7 +1,7 @@
 import logging
-from typing import Optional, Union
+from typing import Annotated, Optional, Union
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 
 from models.links import (
     ClickDataFullResponse,
@@ -74,8 +74,8 @@ async def get_link(
 async def get_link_status(
     shorten_url_id: str,
     full_info: bool,
-    max_result: int = 10,
-    offset: int = 0,
+    max_result: Annotated[int, Query(gt=1)],
+    offset: Annotated[int, Query(gt=0)],
     link_service: BaseLinkService = Depends(get_link_service),
 ) -> Union[ClickDataFullResponse, ClickDataShortResponse]:
     result = await link_service.get_status(shorten_url_id, max_result, offset)

@@ -12,8 +12,6 @@ from db.models.link import Link as LinkDbModel
 from db.models.link import LinkClick as LinkClickDbModel
 from models.links import ClickData, ClientData, Link, Links, ShortLink, ShortLinks
 
-URL_PREFIX = f"http://{app_config.project_host}:{app_config.project_port}/api/v1/"
-
 
 class BaseLinkService(ABC):
     @abstractmethod
@@ -126,7 +124,7 @@ class LinkService(BaseLinkService):
         )
         self.session.add(link)
         await self.session.commit()
-        return ShortLink(url=f"{URL_PREFIX}{link.short_link}")
+        return ShortLink(url=f"{app_config.url_prefix}{link.short_link}")
 
     async def __add_click(self, link: LinkDbModel, client_data: ClientData):
         record = LinkClickDbModel(

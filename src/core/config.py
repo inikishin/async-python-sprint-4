@@ -28,6 +28,10 @@ class AppConfig(BaseSettings):
     db_pass: str = "demo"
     db_show_queries: bool = True
 
+    @property
+    def url_prefix(self):
+        return f"http://{self.project_host}:{self.project_port}/api/v1/"
+
     class Config:
         env_file = ".env"
 
