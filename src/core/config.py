@@ -15,11 +15,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class AppConfig(BaseSettings):
-    project_title: str = "FastAPI Template"
+    project_title: str = "ShortLinks service"
     project_host: str = "0.0.0.0"
     project_port: int = 8000
-    project_docs_url: str = "/api/openapi"
-    project_openapi_url: str = "/api/openapi.json"
+    project_docs_url: str = "/swagger"
+    project_openapi_url: str = "/openapi.json"
 
     db_host: str = "localhost"
     db_port: int = 5432

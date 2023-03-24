@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-from api.v1 import base
+from api.v1 import links
 from core.config import app_config
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
-app.include_router(base.router, prefix="/api/v1")
+app.include_router(links.router, prefix="/api/v1")
 
 if __name__ == "__main__":
     logger.info("Start server...")
